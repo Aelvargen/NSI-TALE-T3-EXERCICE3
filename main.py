@@ -39,7 +39,7 @@ class ensEleve:
         self.dico = {}
         self.donnee=["nom", "prenom", "date_de_naissance", "classe", "emprunts"]
         with codecs.open(csvFileName, encoding="utf-8") as csvfile: # Ouverture du fichier
-                                                    # codecs.open pour forcer le lecture en utf-8
+            # codecs.open pour forcer le lecture en utf-8
             spam = csv.reader(csvfile, delimiter=';') 
             for rang in spam :
                 self.test = {}
