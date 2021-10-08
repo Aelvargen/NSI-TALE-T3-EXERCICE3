@@ -36,13 +36,19 @@ class ensEleve:
         return self.studentsList
 
     def charger_eleves(self, csvFileName):
-        self.data = {}
-        with codecs.open(csvFileName, encoding="utf-8") as csvfile:  # Ouverture du fichier
-        # codecs.open pour forcer le lecture en utf-8
-            spam = csv.reader(csvfile, delimiter=';')
-            for rang in spam:
-                self.data.update({rang[0] : rang})
-        return self.data
+        self.dico = {}
+        self.donnee=["nom", "prenom", "date_de_naissance", "classe", "emprunts"]
+        with codecs.open(csvFileName, encoding="utf-8") as csvfile: # Ouverture du fichier
+                                                    # codecs.open pour forcer le lecture en utf-8
+            spam = csv.reader(csvfile, delimiter=';') 
+            for rang in spam :
+                self.test = {}
+                e = 0
+                for i in self.donnee:
+                    e += 1
+                    self.test[i] = rang[e]
+                self.dico[rang[0]] = self.test
+        return self.dico
 
     def classe(self):
 
