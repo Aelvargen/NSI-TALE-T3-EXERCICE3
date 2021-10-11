@@ -50,7 +50,18 @@ class ensEleve:
                 self.dico[rang[0]] = self.test
         return self.dico
 
-    def classe(self):
+
+    def studentSearchById(self, studentId):
+        for student in self.dico:
+            if student == studentId:
+                return self.dico[student]
+        return None
+
+    def classe(self, studentId):
+        if self.studentSearchById(studentId):
+            
+        else:
+            return None
 
         pass
 
@@ -87,6 +98,7 @@ instance2 = ensEleve()
 
 print(instance2.charger_eleves("eleves.csv"))
 
-
+print(instance2.studentSearchById("elv1"))
+print(instance2.classe("elv"))
 
 # Arrêt : Grand B, 2 : il faut ajouter les clés du dictionnaire pour chaque valeur
