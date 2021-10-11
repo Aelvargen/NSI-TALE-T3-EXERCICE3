@@ -1,0 +1,3 @@
+Créez une méthode classe() qui prend en argument un identifiant d’eleve elv1, et qui modifie la classe de l'élève correspondant. Il faut donc recherche l’eleve dans la dictionnaire, et appliquer la méthode classe sur cet élève.
+
+La méthode doit appartenir à quelle classe ? Que un seul argument ? Je ne dois pas également avoir comme argument la classe que je veux attribuer à l'élève ?

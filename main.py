@@ -57,9 +57,9 @@ class ensEleve:
                 return self.dico[student]
         return None
 
-    def classe(self, studentId):
+    def classe(self, studentId, ):
         if self.studentSearchById(studentId):
-            
+            return self.studentSearchById(studentId)
         else:
             return None
 
@@ -89,7 +89,7 @@ class createCsv:
     pass
 
 
-instance = Eleve("Adrien", "Grom", date(2002, 1, 23))
+instance = Eleve("Adrien", "Grom", date(2003, 10, 20))
 
 print(instance)
 print(instance.agedOrOlderThan18())
@@ -99,6 +99,6 @@ instance2 = ensEleve()
 print(instance2.charger_eleves("eleves.csv"))
 
 print(instance2.studentSearchById("elv1"))
-print(instance2.classe("elv"))
+print(instance2.classe("elv1"))
 
 # Arrêt : Grand B, 2 : il faut ajouter les clés du dictionnaire pour chaque valeur
