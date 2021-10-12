@@ -9,7 +9,7 @@ class Eleve:
         self.studentName = studentName
         self.studentSurname = studentSurname
         self.studentDob = studentDob
-        self.studentAge = self.age()
+        # self.studentAge = self.age()
         self.studentGrade = None
         self.studentBookBorrowed = None
 
@@ -50,6 +50,11 @@ class ensEleve:
                 self.dico[rang[0]] = self.test
         return self.dico
 
+    def define_students(self):
+        for student in self.studentsList:
+            self.student = Eleve(self.studentsList[student]["nom"], self.studentsList[student]["prenom"], self.studentsList[student]["date_de_naissance"])
+            print(self.studentsList[student])
+
 
     def studentSearchById(self, studentId):
         for student in self.dico:
@@ -57,16 +62,22 @@ class ensEleve:
                 return self.dico[student]
         return None
 
-    def classe(self, studentId, ):
+    def classe(self, studentId, newClassGroup):
         if self.studentSearchById(studentId):
-            return self.studentSearchById(studentId)
+            self.studentsList[studentId]["classe"] = newClassGroup
+            return self.studentsList[studentId]
         else:
             return None
 
         pass
 
-    def ajoute_emprunt(self):
-
+    def ajoute_emprunt(self, studentId, booksList):
+        if self.studentSearchById(studentId):
+            test = self.studentsList[studentId]["emprunts"]
+            test_re = test[:1] + "'" + str(booksList) + "', " + test[1:]
+            self.studentsList[studentId]["emprunts"] = test_re
+            return self.studentsList[studentId]
+            
         pass
 
     def liste_eleves_majeurs(self):
@@ -89,16 +100,17 @@ class createCsv:
     pass
 
 
-instance = Eleve("Adrien", "Grom", date(2003, 10, 20))
+# instance = Eleve("Adrien", "Grom", date(2003, 10, 20))
 
-print(instance)
-print(instance.agedOrOlderThan18())
+# print(instance)
+# print(instance.agedOrOlderThan18())
 
 instance2 = ensEleve()
 
-print(instance2.charger_eleves("eleves.csv"))
-
 print(instance2.studentSearchById("elv1"))
-print(instance2.classe("elv1"))
+print(instance2.classe("elv1", "test"))
 
+print(instance2.ajoute_emprunt("elv1", "test"))
+print(instance2.define_students())
 # Arrêt : Grand B, 2 : il faut ajouter les clés du dictionnaire pour chaque valeur
+

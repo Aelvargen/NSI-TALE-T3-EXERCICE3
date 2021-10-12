@@ -1,10 +1,6 @@
-dico = {"nom" : None, "prenom" : None}
-liste = ["nom", "prenom"]
-print(dico)
-
-for key in liste:
-
-    dico[key] = "Sarra"
+dico = {"test" : {"premier" : "[]", "deuxième" : 2}}
 
 print(dico)
+dico["test"] = 1
+print(dico["test"])
 
