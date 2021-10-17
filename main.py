@@ -11,11 +11,11 @@ class Eleve:
         self.studentDob = studentDob
         # self.studentAge = self.age()
         self.studentGrade = None
-        self.studentBookBorrowed = None
+        self.studentBookBorrowed = []
 
 
     def __str__(self):
-        return "{} {} {}".format(self.studentName, self.studentSurname, self.studentDob)
+        return "{} {} {} {} {}".format(self.studentName, self.studentSurname, self.studentDob, self.studentGrade, self.studentBookBorrowed)
 
 
     def age(self):
@@ -29,11 +29,11 @@ class Eleve:
 
 class ensEleve:
     def __init__(self) -> None:
-        self.eleve = None
+        self.classroom = {}
         self.studentsList = self.charger_eleves("eleves.csv")
 
     def __str__(self) -> str:
-        return self.studentsList
+        return str(self.classroom)
 
     def charger_eleves(self, csvFileName):
         self.dico = {}
@@ -48,38 +48,48 @@ class ensEleve:
                     e += 1
                     self.test[i] = rang[e]
                 self.dico[rang[0]] = self.test
-        return self.dico
 
-    def define_students(self):
-        for student in self.studentsList:
-            self.student = Eleve(self.studentsList[student]["nom"], self.studentsList[student]["prenom"], self.studentsList[student]["date_de_naissance"])
-            print(self.studentsList[student])
+        return self.create_class()
+
+    def create_class(self):
+        for key, value in self.dico.items():
+            liste = []
+            for item in value.values():
+                liste.append(item)
+            student = Eleve(liste[0], liste[1], liste[2])
+            self.classroom[key] = student
+        return self.classroom
+            
 
 
     def studentSearchById(self, studentId):
-        for student in self.dico:
+        for student in self.classroom:
             if student == studentId:
-                return self.dico[student]
+                return self.classroom[student]
         return None
 
     def classe(self, studentId, newClassGroup):
         if self.studentSearchById(studentId):
-            self.studentsList[studentId]["classe"] = newClassGroup
-            return self.studentsList[studentId]
+            self.classroom[studentId].studentGrade = newClassGroup
+            return self.classroom[studentId]
         else:
             return None
 
         pass
 
-    def ajoute_emprunt(self, studentId, booksList):
+    def ajoute_emprunt(self, studentId, book):
         if self.studentSearchById(studentId):
-            test = self.studentsList[studentId]["emprunts"]
-            test_re = test[:1] + "'" + str(booksList) + "', " + test[1:]
-            self.studentsList[studentId]["emprunts"] = test_re
-            return self.studentsList[studentId]
+            # test = self.classroom[studentId]["studentBookBorrowed"]
+            # test_re = test[:1] + "'" + str(booksList) + "', " + test[1:]
+            self.classroom[studentId].studentBookBorrowed.remove(str(book))
+            return self.classroom[studentId]
             
         pass
 
+    def del_book_borrowed(self, studentId, book):
+        if self.studentSearchById(studentId):
+            self.classroom[studentId].studentBokBorrowed.delete(str(book))
+            return self.classroom[studentId]
     def liste_eleves_majeurs(self):
 
         pass
@@ -107,10 +117,28 @@ class createCsv:
 
 instance2 = ensEleve()
 
-print(instance2.studentSearchById("elv1"))
-print(instance2.classe("elv1", "test"))
+# print(instance2.studentsList)
+print(instance2.classroom["elv1"])
 
-print(instance2.ajoute_emprunt("elv1", "test"))
-print(instance2.define_students())
+instance2.classe("elv1", "cinquième")
+
+
+print(instance2.classroom["elv1"])
+
+instance2.ajoute_emprunt("elv1", "Mein Kampf")
+print(instance2.classroom["elv1"])
+
+instance2.ajoute_emprunt("elv1", "Mein Kampf")
+print(instance2.classroom["elv1"])
+
+
+instance2.del_book_borrowed("elv1", "Mein Kampf")
+print(instance2.classroom["elv1"])
+# print(instance2.studentSearchById("elv1"))
+# print(instance2.classe("elv1", "test"))
+
+# print(instance2.ajoute_emprunt("elv1", "test"))
+
+# print(instance2.define_students())
 # Arrêt : Grand B, 2 : il faut ajouter les clés du dictionnaire pour chaque valeur
 
