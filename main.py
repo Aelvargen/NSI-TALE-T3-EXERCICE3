@@ -43,7 +43,7 @@ class ensEleve:
             # codecs.open pour forcer le lecture en utf-8
             spam = csv.reader(csvfile, delimiter=';') 
             for rang in spam :
-                self.dico[rang[0]] = {'nom': rang[1], 'prenom': rang[2], 'date_de_naissance': rang[3], 'classe': rang[4], 'emprunts': rang[5]}
+                self.dico[rang[0]] = {'nom': rang[1], 'prenom': rang[2], 'date_de_naissance': rang[3], 'classe': rang[4], 'emprunts': (rang[5].split(','))}
                 self.create_student_in_classroom(list(self.dico)[e])
                 e = e + 1
         return self.classroom
@@ -53,7 +53,10 @@ class ensEleve:
         for key, value in self.dico[studentId].items():
             liste.append(value)
         student = Eleve(liste[0], liste[1], liste[2])
+        student.studentGrade = liste[3]
+        student.studentBookBorrowed = liste[4]
         self.classroom[studentId] = student
+
         return self.classroom
             
 
@@ -67,6 +70,7 @@ class ensEleve:
     def classe(self, studentId, newClassGroup):
         if self.studentSearchById(studentId):
             self.classroom[studentId].studentGrade = newClassGroup
+            self.dico[studentId]["classe"] = newClassGroup
             return self.classroom[studentId]
         else:
             return None
@@ -85,8 +89,9 @@ class ensEleve:
         if self.studentSearchById(studentId):
             try:
                 self.classroom[studentId].studentBookBorrowed.remove(str(book))
+
             except ValueError:
-                exit ("Impossible de supprimer l'emrunt, {} n'a pas emprunté '{}' !".format(studentId, book))
+                exit ("Impossible de supprimer l'emprunt, {} n'a pas emprunté '{}' !".format(studentId, book))
             return self.classroom[studentId]
 
 
@@ -129,55 +134,21 @@ class ensEleve:
 
 
 
-
-
-# instance = Eleve("Adrien", "Grom", date(2003, 10, 20))
-
-# print(instance)
-# print(instance.agedOrOlderThan18())
-
 instance2 = ensEleve()
-print(instance2.classroom)
-'''
-print(instance2.classroom["elv1"])
-instance2.ajoute_emprunt("elv1", "Abc")
-print(instance2.classroom["elv1"])
-instance2.classe("elv1", "cinquième")
-print(instance2.classroom["elv1"])
 
 
 
+instance2.ajoute_eleve("elv4", "Alexis", "Sarra", "07/12/2004")
+
+for student in instance2.dico.keys():
+    instance2.classe(student, "Terminale A")
 
 
-instance2.ajoute_emprunt("elv1", "Dfg")
-print(instance2.classroom["elv1"])
+instance2.ajoute_emprunt("elv4", "Les Fables de la Fontaine")
+instance2.del_book_borrowed("elv1", "emprunt_1")
 
-
-instance2.del_book_borrowed("elv1", "Dfg")
-print(instance2.classroom["elv1"])
-
-
-print(instance2.studentsOverTheAgeOfMajority)
-
-
-
-print(instance2.ajoute_eleve("elv4", "Alexis", "Sarra", "12/02/2004"))
-instance2.ajoute_emprunt("elv4", "Dfg")
-print(instance2.classroom["elv4"])
-instance2.del_book_borrowed("elv4", "Dfg")
-print(instance2.classroom["elv4"])
-
-print(instance2.studentsList)
-
-'''
 instance2.export_class_as_csv()
-'''
-# print(instance2.studentSearchById("elv1"))
-# print(instance2.classe("elv1", "test"))
+print(instance2.classroom["elv4"])
+print(instance2.dico)
 
-# print(instance2.ajoute_emprunt("elv1", "test"))
 
-# print(instance2.define_students())
-# Arrêt : Grand B, 2 : il faut ajouter les clés du dictionnaire pour chaque valeur
-
-'''
