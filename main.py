@@ -71,7 +71,6 @@ class ensEleve:
         else:
             return None
 
-        pass
 
     def ajoute_emprunt(self, studentId, book):
         if self.studentSearchById(studentId):
@@ -121,7 +120,15 @@ class ensEleve:
 
 
     def export_class_as_csv(self):
-        
+        field_names = ['id', 'nom', 'prenom', 'date_de_naissance', 'classe', 'emprunts']
+        with open('classroom.csv', 'w') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=field_names)
+            writer.writeheader()
+            for k in self.dico:
+                writer.writerow({field: self.dico[k].get(field) or k for field in field_names})
+
+
+
 
 
 # instance = Eleve("Adrien", "Grom", date(2003, 10, 20))
@@ -130,7 +137,7 @@ class ensEleve:
 # print(instance.agedOrOlderThan18())
 
 instance2 = ensEleve()
-
+print(instance2.classroom)
 '''
 print(instance2.classroom["elv1"])
 instance2.ajoute_emprunt("elv1", "Abc")
@@ -152,7 +159,7 @@ print(instance2.classroom["elv1"])
 
 print(instance2.studentsOverTheAgeOfMajority)
 
-'''
+
 
 print(instance2.ajoute_eleve("elv4", "Alexis", "Sarra", "12/02/2004"))
 instance2.ajoute_emprunt("elv4", "Dfg")
@@ -161,6 +168,9 @@ instance2.del_book_borrowed("elv4", "Dfg")
 print(instance2.classroom["elv4"])
 
 print(instance2.studentsList)
+
+'''
+instance2.export_class_as_csv()
 '''
 # print(instance2.studentSearchById("elv1"))
 # print(instance2.classe("elv1", "test"))
