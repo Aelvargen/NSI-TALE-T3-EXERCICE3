@@ -8,8 +8,8 @@ class Eleve:
     def __init__(self, studentName, studentSurname, studentDob):
         self.studentName = studentName
         self.studentSurname = studentSurname
-        self.studentDob = studentDob
-        # self.studentAge = self.age()
+        self.studentDob = datetime.strptime(studentDob, "%d/%m/%Y")
+        self.studentAge = self.age()
         self.studentGrade = None
         self.studentBookBorrowed = []
 
@@ -19,8 +19,8 @@ class Eleve:
 
 
     def age(self):
-        self.studentAge = (datetime.now().date() - self.studentDob) / 365 # On calcule l'âge de l'élève en jours que nous divisons par 365 pour obtenir le nombre d'années
-        return self.studentAge.days # .days car le nombre d'années est stocké dans notre type <datetime> comme un nombre de jours
+            today = date.today()
+            return today.year - self.studentDob.year - ((today.month, today.day) < (self.studentDob.month, self.studentDob.day))
 
 
     def agedOrOlderThan18(self):
@@ -31,33 +31,29 @@ class ensEleve:
     def __init__(self) -> None:
         self.classroom = {}
         self.studentsList = self.charger_eleves("eleves.csv")
+        self.studentsOverTheAgeOfMajority = self.liste_eleves_majeurs()
 
     def __str__(self) -> str:
         return str(self.classroom)
 
     def charger_eleves(self, csvFileName):
         self.dico = {}
-        self.donnee=["nom", "prenom", "date_de_naissance", "classe", "emprunts"]
+        e = 0
         with codecs.open(csvFileName, encoding="utf-8") as csvfile: # Ouverture du fichier
             # codecs.open pour forcer le lecture en utf-8
             spam = csv.reader(csvfile, delimiter=';') 
             for rang in spam :
-                self.test = {}
-                e = 0
-                for i in self.donnee:
-                    e += 1
-                    self.test[i] = rang[e]
-                self.dico[rang[0]] = self.test
+                self.dico[rang[0]] = {'nom': rang[1], 'prenom': rang[2], 'date_de_naissance': rang[3], 'classe': rang[4], 'emprunts': rang[5]}
+                self.create_student_in_classroom(list(self.dico)[e])
+                e = e + 1
+        return self.classroom
 
-        return self.create_class()
-
-    def create_class(self):
-        for key, value in self.dico.items():
-            liste = []
-            for item in value.values():
-                liste.append(item)
-            student = Eleve(liste[0], liste[1], liste[2])
-            self.classroom[key] = student
+    def create_student_in_classroom(self, studentId):
+        liste = []
+        for key, value in self.dico[studentId].items():
+            liste.append(value)
+        student = Eleve(liste[0], liste[1], liste[2])
+        self.classroom[studentId] = student
         return self.classroom
             
 
@@ -81,33 +77,51 @@ class ensEleve:
         if self.studentSearchById(studentId):
             # test = self.classroom[studentId]["studentBookBorrowed"]
             # test_re = test[:1] + "'" + str(booksList) + "', " + test[1:]
-            self.classroom[studentId].studentBookBorrowed.remove(str(book))
+            self.classroom[studentId].studentBookBorrowed.append(str(book))
             return self.classroom[studentId]
             
         pass
 
     def del_book_borrowed(self, studentId, book):
         if self.studentSearchById(studentId):
-            self.classroom[studentId].studentBokBorrowed.delete(str(book))
+            try:
+                self.classroom[studentId].studentBookBorrowed.remove(str(book))
+            except ValueError:
+                exit ("Impossible de supprimer l'emrunt, {} n'a pas emprunté '{}' !".format(studentId, book))
             return self.classroom[studentId]
+
+
     def liste_eleves_majeurs(self):
+        listOfAdultsStudents = []
+        for studentId in self.classroom:
+            if self.classroom[studentId].agedOrOlderThan18():
+                listOfAdultsStudents.append(studentId)
+        return listOfAdultsStudents
 
-        pass
+    def ajoute_eleve(self, newStudentId, newStudentName, newStudentSurname, newStudentDob):
+        try:
 
-    def ajoute_eleve(self):
+            if not all(isinstance(element, str) for element in [newStudentId, newStudentName, newStudentSurname, newStudentDob]):
+                raise TypeError
 
-        pass
+            if not all(studentId != newStudentId for studentId in self.classroom):
+                raise KeyError
+
+            datetime.strptime(newStudentDob, "%d/%m/%Y") # return ValueError if not possible to convert
+
+        except TypeError:
+            exit("Veuillez inclure chaque variable en tant que chaîne de caractères !")
+        except KeyError:
+            exit("Identifiant déjà existant !")
+        except ValueError:
+            exit("Date de naissance incorrecte, veuillez respecter la syntaxe : jj/mm/aaaa")
+        else:
+            self.dico[newStudentId] = {'nom': newStudentName, 'prenom' : newStudentSurname, 'date_de_naissance' : newStudentDob, 'classe' : None, 'emprunts' : []}
+            return self.create_student_in_classroom(newStudentId)
 
 
-class createCsv:
-
-    def __init__(self) -> None:
-        pass
-
-    def __str__(self) -> str:
-        pass
-
-    pass
+    def export_class_as_csv(self):
+        
 
 
 # instance = Eleve("Adrien", "Grom", date(2003, 10, 20))
@@ -117,23 +131,37 @@ class createCsv:
 
 instance2 = ensEleve()
 
-# print(instance2.studentsList)
+'''
 print(instance2.classroom["elv1"])
-
+instance2.ajoute_emprunt("elv1", "Abc")
+print(instance2.classroom["elv1"])
 instance2.classe("elv1", "cinquième")
-
-
-print(instance2.classroom["elv1"])
-
-instance2.ajoute_emprunt("elv1", "Mein Kampf")
-print(instance2.classroom["elv1"])
-
-instance2.ajoute_emprunt("elv1", "Mein Kampf")
 print(instance2.classroom["elv1"])
 
 
-instance2.del_book_borrowed("elv1", "Mein Kampf")
+
+
+
+instance2.ajoute_emprunt("elv1", "Dfg")
 print(instance2.classroom["elv1"])
+
+
+instance2.del_book_borrowed("elv1", "Dfg")
+print(instance2.classroom["elv1"])
+
+
+print(instance2.studentsOverTheAgeOfMajority)
+
+'''
+
+print(instance2.ajoute_eleve("elv4", "Alexis", "Sarra", "12/02/2004"))
+instance2.ajoute_emprunt("elv4", "Dfg")
+print(instance2.classroom["elv4"])
+instance2.del_book_borrowed("elv4", "Dfg")
+print(instance2.classroom["elv4"])
+
+print(instance2.studentsList)
+'''
 # print(instance2.studentSearchById("elv1"))
 # print(instance2.classe("elv1", "test"))
 
@@ -142,3 +170,4 @@ print(instance2.classroom["elv1"])
 # print(instance2.define_students())
 # Arrêt : Grand B, 2 : il faut ajouter les clés du dictionnaire pour chaque valeur
 
+'''
