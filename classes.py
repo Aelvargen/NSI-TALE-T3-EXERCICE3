@@ -86,12 +86,10 @@ class ensEleve:
 
     def del_book_borrowed(self, studentId, book):
         if self.studentSearchById(studentId):
-            try:
-                self.classroom[studentId].studentBookBorrowed.remove(str(book))
-
-            except ValueError:
-                exit ("Impossible de supprimer l'emprunt, {} n'a pas emprunté '{}' !".format(studentId, book))
-            return self.classroom[studentId]
+            if book in self.classroom[studentId].studentBookBorrowed:
+                self.classroom[studentId].studentBookBorrowed.remove(book)
+            else:
+                return None
 
 
     def liste_eleves_majeurs(self):

@@ -186,7 +186,7 @@ class showStudentInfos():
     def __init__(self, master, window_geometry, classroom, curseselection):
         self.curseselection = curseselection
         self.classroom = classroom
-        self.test = window_geometry(master, 600, 250)
+        self.test = window_geometry(master, 600, 500)
         self.master = master
         self.frame = tk.Frame(self.master)
         master.configure(bg='#2c2c2c')
@@ -235,13 +235,19 @@ class showStudentInfos():
         self.applyChanges.pack(pady=10)
 
     def apply_changes(self):
+
         if len(self.changeStudentGradeInput.get()) != 0:
                 self.classroom.classe(self.curseselection, self.changeStudentGradeInput.get())
         if self.addStudentBookEntry.get() is not None:
             self.classroom.ajoute_emprunt(self.curseselection, self.addStudentBookEntry.get())
 
         if self.delStudentBookEntry.get() is not None:
-            self.classroom.del_book_borrowed(self.curseselection, self.delStudentBookEntry.get())
+            print(self.classroom.dico[self.curseselection])
+            if self.classroom.del_book_borrowed(self.curseselection, str(self.delStudentBookEntry.get())):
+                return True
+            else:
+                return (tkinter.messagebox.showerror('Erreur', 'Le livre indiqué n\'est pas actuellement emprunté par l\'élève !'))
+
             # réussir à retourner l'erreur 
         
 
