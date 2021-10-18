@@ -2,4 +2,3 @@ id,nom,prenom,date_de_naissance,classe,emprunts
 elv1,Mebeaucoup,Sarah,01/01/2003,classe1,"['emprunt_1', 'emprunt_2', 'emprunt_3']"
 elv2,Camion,Bo,18/03/1954,classe2,['emprunt_4']
 elv3,Versaire,Annie,19/09/1970,Schmurtze classe,['emprunt_5']
-elv4,Salut,Jesuimort,12/12/2004,elv4,elv4

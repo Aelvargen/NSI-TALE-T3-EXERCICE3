@@ -5,153 +5,21 @@ from tkinter import *
 from tkinter.ttk import *
 import tkinter.messagebox
 import tkinter as tk
-
 # librairie permettant d'aller chercher un fichier dans un dossier
 import webbrowser
-from datetime import date, datetime
-import codecs
-import csv
-
-class Eleve:
-    def __init__(self, studentName, studentSurname, studentDob):
-        self.studentName = studentName
-        self.studentSurname = studentSurname
-        self.studentDob = datetime.strptime(studentDob, "%d/%m/%Y")
-        self.studentAge = self.age()
-        self.studentGrade = None
-        self.studentBookBorrowed = []
-
-
-    def __str__(self):
-        return "{} {} {} {} {}".format(self.studentName, self.studentSurname, self.studentDob, self.studentGrade, self.studentBookBorrowed)
-
-
-    def age(self):
-            today = date.today()
-            return today.year - self.studentDob.year - ((today.month, today.day) < (self.studentDob.month, self.studentDob.day))
-
-
-    def agedOrOlderThan18(self):
-        return True if self.studentAge >= 18 else False
-
-
-class ensEleve:
-    def __init__(self) -> None:
-        self.classroom = {}
-        self.studentsList = self.charger_eleves("eleves.csv")
-        self.studentsOverTheAgeOfMajority = self.liste_eleves_majeurs()
-
-    def __str__(self) -> str:
-        return str(self.classroom)
-
-    def charger_eleves(self, csvFileName):
-        self.dico = {}
-        e = 0
-        with codecs.open(csvFileName, encoding="utf-8") as csvfile: # Ouverture du fichier
-            # codecs.open pour forcer le lecture en utf-8
-            spam = csv.reader(csvfile, delimiter=';') 
-            for rang in spam :
-                self.dico[rang[0]] = {'nom': rang[1], 'prenom': rang[2], 'date_de_naissance': rang[3], 'classe': rang[4], 'emprunts': (rang[5].split(','))}
-                self.create_student_in_classroom(list(self.dico)[e])
-                e = e + 1
-        return self.classroom
-
-    def create_student_in_classroom(self, studentId):
-        liste = []
-        for key, value in self.dico[studentId].items():
-            liste.append(value)
-        student = Eleve(liste[0], liste[1], liste[2])
-        student.studentGrade = liste[3]
-        student.studentBookBorrowed = liste[4]
-        self.classroom[studentId] = student
-
-        return self.classroom
-            
-
-
-    def studentSearchById(self, studentId):
-        for student in self.classroom:
-            if student == studentId:
-                return self.classroom[student]
-        return None
-
-    def classe(self, studentId, newClassGroup):
-        if self.studentSearchById(studentId):
-            self.classroom[studentId].studentGrade = newClassGroup
-            self.dico[studentId]["classe"] = newClassGroup
-            return self.classroom[studentId]
-        else:
-            return None
-
-
-    def ajoute_emprunt(self, studentId, book):
-        if self.studentSearchById(studentId):
-            # test = self.classroom[studentId]["studentBookBorrowed"]
-            # test_re = test[:1] + "'" + str(booksList) + "', " + test[1:]
-            self.classroom[studentId].studentBookBorrowed.append(str(book))
-            return self.classroom[studentId]
-            
-        pass
-
-    def del_book_borrowed(self, studentId, book):
-        if self.studentSearchById(studentId):
-            try:
-                self.classroom[studentId].studentBookBorrowed.remove(str(book))
-
-            except ValueError:
-                exit ("Impossible de supprimer l'emprunt, {} n'a pas emprunté '{}' !".format(studentId, book))
-            return self.classroom[studentId]
-
-
-    def liste_eleves_majeurs(self):
-        listOfAdultsStudents = []
-        for studentId in self.classroom:
-            if self.classroom[studentId].agedOrOlderThan18():
-                listOfAdultsStudents.append(studentId)
-        return listOfAdultsStudents
-
-    def ajoute_eleve(self, newStudentId, newStudentName, newStudentSurname, newStudentDob):
-        try:
-
-            if not all(isinstance(element, str) for element in [newStudentId, newStudentName, newStudentSurname, newStudentDob]):
-                raise TypeError
-
-            if not all(studentId != newStudentId for studentId in self.classroom):
-                raise KeyError
-
-            datetime.strptime(newStudentDob, "%d/%m/%Y") # return ValueError if not possible to convert
-
-        except TypeError:
-            exit("Veuillez inclure chaque variable en tant que chaîne de caractères !")
-        except KeyError:
-            exit("Identifiant déjà existant !")
-        except ValueError:
-            exit("Date de naissance incorrecte, veuillez respecter la syntaxe : jj/mm/aaaa")
-        else:
-            self.dico[newStudentId] = {'nom': newStudentName, 'prenom' : newStudentSurname, 'date_de_naissance' : newStudentDob, 'classe' : None, 'emprunts' : []}
-            return self.create_student_in_classroom(newStudentId)
-
-
-    def export_class_as_csv(self):
-        field_names = ['id', 'nom', 'prenom', 'date_de_naissance', 'classe', 'emprunts']
-        with open('classroom.csv', 'w') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=field_names)
-            writer.writeheader()
-            for k in self.dico:
-                writer.writerow({field: self.dico[k].get(field) or k for field in field_names})
-
+from classes import ensEleve
 
 class MainApplication:
 
     def __init__(self, master):
         self.classroom = ensEleve()
         self.master = master
-        self.label_title = tk.Label(master, text='Test :', fg='white', bg='#2c2c2c', font='Helvetica 14 bold')  # titre
+        self.label_title = tk.Label(master, text='Liste des élèves :', fg='white', bg='#2c2c2c', font='Helvetica 14 bold')  # titre
         self.label_title.pack(pady=20, padx=10)
 
         self.my_listbox = Listbox(self.master)
         self.my_listbox.pack(pady=15)
-        for key, value in self.classroom.dico.items():
+        for key in self.classroom.dico.keys():
             self.my_listbox.insert(END, key)
 
         self.my_button = Button(master, text="Ajouter un élève",  command=self.add_new_student)
@@ -179,7 +47,7 @@ class MainApplication:
     
     def refresh(self):
         self.my_listbox.delete(0, 'end')
-        for key, value in self.classroom.dico.items():
+        for key in self.classroom.dico.keys():
             self.my_listbox.insert(END, key)
 
     def add_new_student(self):
@@ -187,10 +55,14 @@ class MainApplication:
         self.app = ResultsWindow(self.newCreatingWindow, self.window_geometry, self.classroom)
 
     def show_student_info(self):
-        self.currentSelectionValue = self.my_listbox.get(self.my_listbox.curselection())
-        self.newInfoWindow = tk.Toplevel(self.master)
-        self.app = showStudentInfos(
-            self.newInfoWindow, self.window_geometry, self.classroom.dico, self.currentSelectionValue)
+        try:
+            self.currentSelectionValue = self.my_listbox.get(self.my_listbox.curselection())
+            self.newInfoWindow = tk.Toplevel(self.master)
+            self.app = showStudentInfos(
+            self.newInfoWindow, self.window_geometry, self.classroom, self.currentSelectionValue)
+        except TclError:
+            return (tkinter.messagebox.showerror('Erreur', 'Veuillez sélectionner un élève !'))
+
 
 
 
@@ -312,36 +184,66 @@ class ResultsWindow:
 
 class showStudentInfos():
     def __init__(self, master, window_geometry, classroom, curseselection):
+        self.curseselection = curseselection
         self.classroom = classroom
         self.test = window_geometry(master, 600, 250)
         self.master = master
         self.frame = tk.Frame(self.master)
         master.configure(bg='#2c2c2c')
 
-
-        self.studentName = tk.Label(master, text=classroom[curseselection]['prenom'], fg='white', bg='#2c2c2c', font='Helvetica')
+        self.studentNameTitle = tk.Label(master, text="Prénom :", fg='white', bg='#2c2c2c', font='Helvetica')
+        self.studentNameTitle.pack()
+        self.studentName = tk.Label(master, text=classroom.dico[curseselection]['prenom'], fg='white', bg='#2c2c2c', font='Helvetica')
         self.studentName.pack()
 
-        self.studentSurname = tk.Label(master, text=classroom[curseselection]['nom'], fg='white', bg='#2c2c2c', font='Helvetica')
+        self.studentSurnameTitle = tk.Label(master, text="Nom de famille :", fg='white', bg='#2c2c2c', font='Helvetica')
+        self.studentSurnameTitle.pack()
+        self.studentSurname = tk.Label(master, text=classroom.dico[curseselection]['nom'], fg='white', bg='#2c2c2c', font='Helvetica')
         self.studentSurname.pack()
 
-        self.studentDob = tk.Label(master, text=classroom[curseselection]['date_de_naissance'], fg='white', bg='#2c2c2c', font='Helvetica')
+        self.studentDobTitle = tk.Label(master, text="Date de naissance :", fg='white', bg='#2c2c2c', font='Helvetica')
+        self.studentDobTitle.pack()
+        self.studentDob = tk.Label(master, text=classroom.dico[curseselection]['date_de_naissance'], fg='white', bg='#2c2c2c', font='Helvetica')
         self.studentDob.pack()
 
-        self.studentGrade = tk.Label(master, text=classroom[curseselection]['classe'], fg='white', bg='#2c2c2c', font='Helvetica')
+        self.studentGradeTitle = tk.Label(master, text="Classe :", fg='white', bg='#2c2c2c', font='Helvetica')
+        self.studentGradeTitle.pack()
+        self.studentGrade = tk.Label(master, text=classroom.dico[curseselection]['classe'], fg='white', bg='#2c2c2c', font='Helvetica')
         self.studentGrade.pack()
 
-        self.studentBooksBorrowed = tk.Label(master, text=classroom[curseselection]['emprunts'], fg='white', bg='#2c2c2c', font='Helvetica')
+        self.studentBooksBorrowedTitle = tk.Label(master, text="Livres empruntés :", fg='white', bg='#2c2c2c', font='Helvetica')
+        self.studentBooksBorrowedTitle.pack()
+        self.studentBooksBorrowed = tk.Label(master, text=classroom.dico[curseselection]['emprunts'], fg='white', bg='#2c2c2c', font='Helvetica')
         self.studentBooksBorrowed.pack()
 
+        self.changeStudentGradeLabel = tk.Label(master, text="Changer la classe de l'élève :", fg='white', bg='#2c2c2c', font='Helvetica')
+        self.changeStudentGradeLabel.pack()
+        self.changeStudentGradeInput = tk.Entry(master, width=10, font='Helvetica')
+        self.changeStudentGradeInput.pack()
 
+        self.addStudentBookLabel = tk.Label(master, text="Ajouter un livre :", fg='white', bg='#2c2c2c', font='Helvetica')
+        self.addStudentBookLabel.pack()
+        self.addStudentBookEntry = tk.Entry(master, width=10, font='Helvetica')
+        self.addStudentBookEntry.pack()
 
+        self.delStudentBookLabel = tk.Label(master, text="Supprimer un livre :", fg='white', bg='#2c2c2c', font='Helvetica')
+        self.delStudentBookLabel.pack()
+        self.delStudentBookEntry = tk.Entry(master, width=10, font='Helvetica')
+        self.delStudentBookEntry.pack()
 
+        self.applyChanges = Button(master, text="Appliquer les modifications", command = self.apply_changes)
+        self.applyChanges.pack(pady=10)
 
+    def apply_changes(self):
+        if len(self.changeStudentGradeInput.get()) != 0:
+                self.classroom.classe(self.curseselection, self.changeStudentGradeInput.get())
+        if self.addStudentBookEntry.get() is not None:
+            self.classroom.ajoute_emprunt(self.curseselection, self.addStudentBookEntry.get())
 
-
-
-
+        if self.delStudentBookEntry.get() is not None:
+            self.classroom.del_book_borrowed(self.curseselection, self.delStudentBookEntry.get())
+            # réussir à retourner l'erreur 
+        
 
 
 
