@@ -44,6 +44,9 @@ class MainApplication:
         self.master = master
         self.frame = Frame(self.master, relief=RAISED, borderwidth=1)
 
+        self.agedOrOlderThan18StudentsButton = Button(master, text="Liste des élèves majeurs", command=self.show_aged_or_older_than_18_students)
+        self.agedOrOlderThan18StudentsButton.place(x=400, y=250)
+
         # TOUS LES LOGOS UTILISÉS PROVIENNENT DU SITE: https://www.flaticon.com/
         self.refresh()
         self.frame.pack()
@@ -71,7 +74,9 @@ class MainApplication:
             self.newInfoWindow = Toplevel(self.master)
             self.app = showStudentInfos(self.newInfoWindow, self.window_geometry, self.classroom, self.currentSelectionValue)
 
-
+    def show_aged_or_older_than_18_students(self):
+        self.newStudentsListWindow = Toplevel(self.master)
+        self.app = showAgedOrOlderThan18Students(self.newStudentsListWindow, self.window_geometry, self.classroom)
 
 
     def init_Window(self, master): 
@@ -294,6 +299,32 @@ class showStudentInfos():
     def close_window(self):
         self.master.destroy()
 
+class showAgedOrOlderThan18Students():
+    def __init__(self, master, window_geometry, classroom):
+        self.classroom = classroom
+        self.test = window_geometry(master, 600, 200)
+        self.master = master
+        self.frame = Frame(self.master)
+        master.configure(bg='#FFF')
+        master.attributes('-topmost', True)
+
+        self.students_Box = LabelFrame(self.master,text='Liste des élèves majeurs par identifiant',relief=GROOVE, labelanchor='n', width=850, height=180)
+        self.students_Box.grid_propagate(0)
+        self.students_Box.pack(pady=15)
+
+        self.scrollbar = Scrollbar(self.students_Box)
+        self.scrollbar.pack(side=RIGHT, fill=Y)
+
+        self.listbox = Listbox(self.students_Box, width=90, bg='azure', font=('Consolas', 10, ''))  # 'TkDefaultFont 11')
+        self.listbox.pack(padx=5, pady=10)
+
+        for element in classroom.liste_eleves_majeurs():
+            self.listbox.insert(END,'%s' % ((element)))
+        
+        self.listbox.configure(yscrollcommand=self.scrollbar.set)
+        self.scrollbar.configure(command=self.listbox.yview)
+
+        
 
 
 def main():
