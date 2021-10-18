@@ -70,7 +70,7 @@ class ensEleve:
         if self.studentSearchById(studentId):
             self.classroom[studentId].studentGrade = newClassGroup
             self.dico[studentId]["classe"] = newClassGroup
-            return self.classroom[studentId]
+            return True
         else:
             return None
 
@@ -80,14 +80,19 @@ class ensEleve:
             # test = self.classroom[studentId]["studentBookBorrowed"]
             # test_re = test[:1] + "'" + str(booksList) + "', " + test[1:]
             self.classroom[studentId].studentBookBorrowed.append(str(book))
-            return self.classroom[studentId]
+            return True
+        else:
+            return False
             
         pass
 
     def del_book_borrowed(self, studentId, book):
         if self.studentSearchById(studentId):
             if book in self.classroom[studentId].studentBookBorrowed:
+                print(self.classroom[studentId].studentBookBorrowed)
                 self.classroom[studentId].studentBookBorrowed.remove(book)
+                print(self.classroom[studentId].studentBookBorrowed)
+                return True
             else:
                 return None
 
@@ -100,25 +105,29 @@ class ensEleve:
         return listOfAdultsStudents
 
     def ajoute_eleve(self, newStudentId, newStudentName, newStudentSurname, newStudentDob):
+
         try:
 
             if not all(isinstance(element, str) for element in [newStudentId, newStudentName, newStudentSurname, newStudentDob]):
                 raise TypeError
 
-            if not all(studentId != newStudentId for studentId in self.classroom):
+            if not all(studentId != newStudentId for studentId in self.classroom.keys()):
                 raise KeyError
 
             datetime.strptime(newStudentDob, "%d/%m/%Y") # return ValueError if not possible to convert
 
+
         except TypeError:
-            exit("Veuillez inclure chaque variable en tant que chaîne de caractères !")
+            return TypeError
         except KeyError:
-            exit("Identifiant déjà existant !")
+            return KeyError
         except ValueError:
-            exit("Date de naissance incorrecte, veuillez respecter la syntaxe : jj/mm/aaaa")
+            return ValueError
         else:
             self.dico[newStudentId] = {'nom': newStudentName, 'prenom' : newStudentSurname, 'date_de_naissance' : newStudentDob, 'classe' : None, 'emprunts' : []}
-            return self.create_student_in_classroom(newStudentId)
+            self.create_student_in_classroom(newStudentId)
+
+            return True
 
 
     def export_class_as_csv(self):

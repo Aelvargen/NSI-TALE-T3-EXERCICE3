@@ -4,7 +4,7 @@
 from tkinter import *
 from tkinter.ttk import *
 import tkinter.messagebox
-import tkinter as tk
+
 # librairie permettant d'aller chercher un fichier dans un dossier
 import webbrowser
 from classes import ensEleve
@@ -14,31 +14,38 @@ class MainApplication:
     def __init__(self, master):
         self.classroom = ensEleve()
         self.master = master
-        self.label_title = tk.Label(master, text='Liste des élèves :', fg='white', bg='#2c2c2c', font='Helvetica 14 bold')  # titre
-        self.label_title.pack(pady=20, padx=10)
 
-        self.my_listbox = Listbox(self.master)
-        self.my_listbox.pack(pady=15)
+        self.students_Box = LabelFrame(self.master,text='Liste des identifiants élèves',relief=GROOVE, labelanchor='n', width=850, height=180)
+        self.students_Box.grid_propagate(0)
+
+        self.students_Box.pack(pady=15)
+
+        self.scrollbar = Scrollbar(self.students_Box)
+        self.scrollbar.pack(side=RIGHT, fill=Y)
+
+       
+        self.listbox = Listbox(self.students_Box, width=90, bg='azure', font=('Consolas', 10, ''))  # 'TkDefaultFont 11')
+        self.listbox.pack(padx=5, pady=10)
+
         for key in self.classroom.dico.keys():
-            self.my_listbox.insert(END, key)
+            self.listbox.insert(END,'%s' % ((key)))
+        
+        self.listbox.configure(yscrollcommand=self.scrollbar.set)
+        self.scrollbar.configure(command=self.listbox.yview)
 
         self.my_button = Button(master, text="Ajouter un élève",  command=self.add_new_student)
-        self.my_button.pack(pady=10)
+        self.my_button.place(x=25, y=250)
 
         self.my_button2 = Button(master, text="Voir les infos de l'élève", command=self.show_student_info)
-        self.my_button2.pack(pady=10)
-        self.my_label = Label(master, text='')
-        self.my_label.pack(pady=5)
+        self.my_button2.place(x=150, y=250)
 
         self.my_button3 = Button(master, text="Rafraichir la liste", command = lambda : self.refresh())
-        self.my_button3.pack(pady=10)
-
-
+        self.my_button3.place(x=550, y=250)
         self.master = master
-        self.frame = tk.Frame(self.master, relief=RAISED, borderwidth=1)
+        self.frame = Frame(self.master, relief=RAISED, borderwidth=1)
 
         # TOUS LES LOGOS UTILISÉS PROVIENNENT DU SITE: https://www.flaticon.com/
-
+        self.refresh()
         self.frame.pack()
         self.createMenuBar(master)
         self.main_application_geometry = self.window_geometry(master, 700, 500)
@@ -46,32 +53,32 @@ class MainApplication:
 
     
     def refresh(self):
-        self.my_listbox.delete(0, 'end')
         for key in self.classroom.dico.keys():
-            self.my_listbox.insert(END, key)
+            if key not in self.listbox.get(0, 'end'):
+                self.listbox.insert(END, '%s' % ((key)))
 
     def add_new_student(self):
-        self.newCreatingWindow = tk.Toplevel(self.master)
-        self.app = ResultsWindow(self.newCreatingWindow, self.window_geometry, self.classroom)
+        self.newCreatingWindow = Toplevel(self.master)
+        self.app = addNewStudentWindow(self.newCreatingWindow, self.window_geometry, self.classroom)
 
     def show_student_info(self):
         try:
-            self.currentSelectionValue = self.my_listbox.get(self.my_listbox.curselection())
-            self.newInfoWindow = tk.Toplevel(self.master)
-            self.app = showStudentInfos(
-            self.newInfoWindow, self.window_geometry, self.classroom, self.currentSelectionValue)
+            self.currentSelectionValue = self.listbox.get(self.listbox.curselection())
+            
         except TclError:
             return (tkinter.messagebox.showerror('Erreur', 'Veuillez sélectionner un élève !'))
+        else:
+            self.newInfoWindow = Toplevel(self.master)
+            self.app = showStudentInfos(self.newInfoWindow, self.window_geometry, self.classroom, self.currentSelectionValue)
 
 
 
 
-    def init_Window(self, master):  # INITIALISATION DU STYLE DE LA FENÊTRE
-        self.title = master.title('Tris')
-        master.configure(bg='#2c2c2c')
+    def init_Window(self, master): 
+        self.title = master.title('Liste des élèves')
+        master.configure(bg='#FFF')
 
-        # UTILISATION D'UN THÈME PERSONNALISÉ
-        # VOIR: https://wiki.tcl-lang.org/page/List+of+ttk+Themes ET https://sourceforge.net/projects/tcl-awthemes/
+        
         master.tk.call('lappend', 'auto_path', 'awthemes-10.3.0/')
         master.tk.call('package', 'require', 'awlight')
         self.style = Style()
@@ -79,7 +86,7 @@ class MainApplication:
 
         # Logo stocké dans le dossier /images
         self.favicon = master.iconbitmap(r'images/favicon.ico')
-        self.menu = tk.Menu()
+        self.menu = Menu()
 
     # DÉFINITION DE LA TAILLE ET DU CENTRAGE DE LA FENÊTRE
     # Le but de cette fonction est de centrer notre fenêtre quelque soit la résolution de l'écran. Les dimensions s'adaptent également.
@@ -101,8 +108,8 @@ class MainApplication:
     def createMenuBar(self, master):  # MENU SUPÉRIEUR
 
         self.var = IntVar()
-        menuBar = tk.Menu(master)
-        menuFile = tk.Menu(menuBar, tearoff=0)
+        menuBar = Menu(master)
+        menuFile = Menu(menuBar, tearoff=0)
 
         menuBar.add_cascade(label='Fichier', menu=menuFile)
 
@@ -111,7 +118,7 @@ class MainApplication:
         menuFile.add_command(label='Sauvegarder les résultats', image=self.photoimage_save, compound=LEFT, command= lambda : self.classroom.export_class_as_csv())
 
 
-        menuHelp = tk.Menu(menuBar, tearoff=0)
+        menuHelp = Menu(menuBar, tearoff=0)
         # Énoncé de l'exercice
         self.photo_link = PhotoImage(file=r'images/link.png')  # logo
         self.photoimage_link = self.photo_link.subsample(30, 30)
@@ -131,52 +138,72 @@ class MainApplication:
 
     def do_about(self):
         self.msg = tkinter.messagebox.showinfo(
-            'À propos', '---------------------------------------\n Tri par récursivité pour piles et files en OOP.\n Réalisé par Alexis SARRA \n\n Classe de Terminale d\'enseignement Numérique et Sciences Informatiques \n\n Lycée Privé Ensemble Scolaire Jean-XXIII - 57958 Montigny-lès-Metz \n ---------------------------------------'
+            'À propos', '---------------------------------------\n Gestion d\'une liste d\'élève.\n Réalisé par Alexis SARRA \n\n Classe de Terminale d\'enseignement Numérique et Sciences Informatiques \n\n Lycée Privé Ensemble Scolaire Jean-XXIII - 57958 Montigny-lès-Metz \n ---------------------------------------'
         )
 
 
-class ResultsWindow:
+class addNewStudentWindow:
     def __init__(self, master, window_geometry, classroom):
         self.classroom = classroom
-        self.test = window_geometry(master, 600, 250)
+        self.test = window_geometry(master, 600, 375)
         self.master = master
-        self.frame = tk.Frame(self.master)
-        master.configure(bg='#2c2c2c')
+        self.frame = Frame(self.master)
+        master.configure(bg='#FFF')
+        master.attributes('-topmost', True)
 
-        self.newStudentIdLabel = tk.Label(master, text='Identifiant du nouvel élève:', fg='white', bg='#2c2c2c', font='Helvetica')
+        self.students_Box = LabelFrame(self.master,text='Nouvel Élève', relief=GROOVE, labelanchor='n', width=850, height=180)
+        self.students_Box.grid_propagate(0)
+        self.students_Box.pack(pady=15)
+
+        self.newStudentIdLabel = Label(self.students_Box, text='Identifiant du nouvel élève:', foreground='#151414', font='Consolas')
         self.newStudentIdLabel.pack()
-        self.newStudentIdInput = tk.Entry(master, width=30, font='Helvetica')
+        self.newStudentIdInput = Entry(self.students_Box, width=30, font='Consolas')
         self.newStudentIdInput.pack(pady=5, padx=10)
 
 
-        self.newStudentNameLabel = tk.Label(master, text='Prénom du nouvel élève:', fg='white', bg='#2c2c2c', font='Helvetica')
+        self.newStudentNameLabel = Label(self.students_Box, text='Prénom du nouvel élève:', foreground='#151414', font='Consolas')
         self.newStudentNameLabel.pack()
-        self.newStudentNameInput = tk.Entry(master, width=30, font='Helvetica')
+        self.newStudentNameInput = Entry(self.students_Box, width=30, font='Consolas')
         self.newStudentNameInput.pack(pady=5, padx=10)
 
 
-        self.newStudentSurnameLabel = tk.Label(master, text='Nom de famille du nouvel élève:', fg='white', bg='#2c2c2c', font='Helvetica')
+        self.newStudentSurnameLabel = Label(self.students_Box, text='Nom de famille du nouvel élève:', foreground='#151414', font='Consolas')
         self.newStudentSurnameLabel.pack()
-        self.newStudentSurnameInput = tk.Entry(master, width=30, font='Helvetica')
+        self.newStudentSurnameInput = Entry(self.students_Box, width=30, font='Consolas')
         self.newStudentSurnameInput.pack(pady=5, padx=10)
 
-        self.newStudentDobLabel = tk.Label(master, text='Date d\'anniversaire du nouvel élève:', fg='white', bg='#2c2c2c', font='Helvetica')
+        self.newStudentDobLabel = Label(self.students_Box, text='Date d\'anniversaire du nouvel élève:', foreground='#151414', font='Consolas')
         self.newStudentDobLabel.pack()
-        self.newStudentDobInput = tk.Entry(master, width=30, font='Helvetica')
+        self.newStudentDobInput = Entry(self.students_Box, width=30, font='Consolas')
         self.newStudentDobInput.pack(pady=5, padx=10)
     
 
-        self.addButton = tk.Button(self.frame, text = 'Ajouter', width = 25, command = self.add_new_student)
+        self.addButton = Button(self.frame, text = 'Ajouter', width = 25, command = self.add_new_student)
         self.addButton.pack()
 
-        self.quitButton = tk.Button(self.frame, text = 'Quitter', width = 25, command = self.close_window)
+        self.quitButton = Button(self.frame, text = 'Quitter', width = 25, command = self.close_window)
         self.quitButton.pack()
 
         self.frame.pack()
 
     def add_new_student(self):
-        self.classroom.ajoute_eleve(self.newStudentIdInput.get(), self.newStudentNameInput.get(), self.newStudentSurnameInput.get(), self.newStudentDobInput.get())
-        
+
+        if self.classroom.ajoute_eleve(self.newStudentIdInput.get(), self.newStudentNameInput.get(), self.newStudentSurnameInput.get(), self.newStudentDobInput.get()) == KeyError:
+            self.master.attributes('-topmost', False)
+            return (tkinter.messagebox.showerror('Erreur', "Identifiant déjà existant !")), self.master.attributes('-topmost', True)
+
+        elif self.classroom.ajoute_eleve(self.newStudentIdInput.get(), self.newStudentNameInput.get(), self.newStudentSurnameInput.get(), self.newStudentDobInput.get()) == ValueError:
+            self.master.attributes('-topmost', False)
+            return (tkinter.messagebox.showerror('Erreur', "Date de naissance incorrecte, veuillez respecter la syntaxe : jj/mm/aaaa")), self.master.attributes('-topmost', True)
+
+        elif self.classroom.ajoute_eleve(self.newStudentIdInput.get(), self.newStudentNameInput.get(), self.newStudentSurnameInput.get(), self.newStudentDobInput.get()) == TypeError:
+            self.master.attributes('-topmost', False)
+            return (tkinter.messagebox.showerror('Erreur', "Veuillez inclure chaque variable en tant que chaîne de caractères !")), self.master.attributes('-topmost', True)
+
+
+        else:
+            self.close_window()
+            return (tkinter.messagebox.showinfo('Confirmation', "Enregistrement fait !"))
 
     def close_window(self):
         self.master.destroy()
@@ -188,82 +215,93 @@ class showStudentInfos():
         self.classroom = classroom
         self.test = window_geometry(master, 600, 500)
         self.master = master
-        self.frame = tk.Frame(self.master)
-        master.configure(bg='#2c2c2c')
+        self.frame = Frame(self.master)
+        master.configure(bg='#FFF')
+        master.attributes('-topmost', True)
 
-        self.studentNameTitle = tk.Label(master, text="Prénom :", fg='white', bg='#2c2c2c', font='Helvetica')
-        self.studentNameTitle.pack()
-        self.studentName = tk.Label(master, text=classroom.dico[curseselection]['prenom'], fg='white', bg='#2c2c2c', font='Helvetica')
-        self.studentName.pack()
+        self.students_Box = LabelFrame(self.master,text='Fiche Élève : {}'.format(self.curseselection), relief=GROOVE, labelanchor='n', width=850, height=180)
+        self.students_Box.grid_propagate(0)
+        self.students_Box.pack(pady=15)
 
-        self.studentSurnameTitle = tk.Label(master, text="Nom de famille :", fg='white', bg='#2c2c2c', font='Helvetica')
-        self.studentSurnameTitle.pack()
-        self.studentSurname = tk.Label(master, text=classroom.dico[curseselection]['nom'], fg='white', bg='#2c2c2c', font='Helvetica')
-        self.studentSurname.pack()
+        self.studentNameTitle = Label(self.students_Box, text="Prénom", foreground='#151414', font=('Consolas', 11, 'normal', 'underline'))
+        self.studentNameTitle.grid(row=0, sticky=E)
+        self.studentNameTitle.grid_rowconfigure(1, weight=1)
+        self.studentNameTitle.grid_columnconfigure(1, weight=1)
 
-        self.studentDobTitle = tk.Label(master, text="Date de naissance :", fg='white', bg='#2c2c2c', font='Helvetica')
-        self.studentDobTitle.pack()
-        self.studentDob = tk.Label(master, text=classroom.dico[curseselection]['date_de_naissance'], fg='white', bg='#2c2c2c', font='Helvetica')
-        self.studentDob.pack()
+        self.studentName = Label(self.students_Box, text=' ' + classroom.dico[curseselection]['prenom'], foreground='#151414', font='Consolas')
+        self.studentName.grid(row=0, column=1, sticky=W)
+    
+        self.studentSurnameTitle = Label(self.students_Box, text="Nom de famille", foreground='#151414', font=('Consolas', 11, 'normal', 'underline'))
+        self.studentSurnameTitle.grid(row=1, sticky=E)
+        self.studentSurname = Label(self.students_Box, text=' ' + classroom.dico[curseselection]['nom'], foreground='#151414', font='Consolas')
+        self.studentSurname.grid(row=1, column=1, sticky=W)
 
-        self.studentGradeTitle = tk.Label(master, text="Classe :", fg='white', bg='#2c2c2c', font='Helvetica')
-        self.studentGradeTitle.pack()
-        self.studentGrade = tk.Label(master, text=classroom.dico[curseselection]['classe'], fg='white', bg='#2c2c2c', font='Helvetica')
-        self.studentGrade.pack()
+        self.studentDobTitle = Label(self.students_Box, text="Date de naissance", foreground='#151414', font=('Consolas', 11, 'normal', 'underline'))
+        self.studentDobTitle.grid(row=2, sticky=E)
+        self.studentDob = Label(self.students_Box, text=' ' + classroom.dico[curseselection]['date_de_naissance'], foreground='#151414', font='Consolas')
+        self.studentDob.grid(row=2, column=1, sticky=W)
 
-        self.studentBooksBorrowedTitle = tk.Label(master, text="Livres empruntés :", fg='white', bg='#2c2c2c', font='Helvetica')
-        self.studentBooksBorrowedTitle.pack()
-        self.studentBooksBorrowed = tk.Label(master, text=classroom.dico[curseselection]['emprunts'], fg='white', bg='#2c2c2c', font='Helvetica')
-        self.studentBooksBorrowed.pack()
+        self.studentGradeTitle = Label(self.students_Box, text="Classe", foreground='#151414', font=('Consolas', 11, 'normal', 'underline'))
+        self.studentGradeTitle.grid(row=3, sticky=E)
+        self.studentGrade = Label(self.students_Box, text=' ' + str(classroom.dico[curseselection]['classe']), foreground='#151414', font='Consolas')
+        self.studentGrade.grid(row=3, column=1, sticky=W)
 
-        self.changeStudentGradeLabel = tk.Label(master, text="Changer la classe de l'élève :", fg='white', bg='#2c2c2c', font='Helvetica')
+        self.studentBooksBorrowedTitle = Label(self.students_Box, text="Livres empruntés", foreground='#151414', font=('Consolas', 11, 'normal', 'underline'))
+        self.studentBooksBorrowedTitle.grid(row=4, sticky=E)
+        self.studentBooksBorrowed = Label(self.students_Box, text=' ' + str(classroom.dico[curseselection]['emprunts']), foreground='#151414', font='Consolas')
+        self.studentBooksBorrowed.grid(row=4, column=1, sticky=W)
+
+        self.changeStudentGradeLabel = Label(self.master, text="Changer la classe de l'élève", foreground='#151414', font=('Consolas', 11, 'normal', 'underline'))
         self.changeStudentGradeLabel.pack()
-        self.changeStudentGradeInput = tk.Entry(master, width=10, font='Helvetica')
+        self.changeStudentGradeInput = Entry(self.master, width=10, font='Consolas')
         self.changeStudentGradeInput.pack()
 
-        self.addStudentBookLabel = tk.Label(master, text="Ajouter un livre :", fg='white', bg='#2c2c2c', font='Helvetica')
+        self.addStudentBookLabel = Label(self.master, text="Ajouter un livre", foreground='#151414', font=('Consolas', 11, 'normal', 'underline'))
         self.addStudentBookLabel.pack()
-        self.addStudentBookEntry = tk.Entry(master, width=10, font='Helvetica')
+        self.addStudentBookEntry = Entry(self.master, width=10, font='Consolas')
         self.addStudentBookEntry.pack()
 
-        self.delStudentBookLabel = tk.Label(master, text="Supprimer un livre :", fg='white', bg='#2c2c2c', font='Helvetica')
+        self.delStudentBookLabel = Label(self.master, text="Supprimer un livre", foreground='#151414', font=('Consolas', 11, 'normal', 'underline'))
         self.delStudentBookLabel.pack()
-        self.delStudentBookEntry = tk.Entry(master, width=10, font='Helvetica')
+        self.delStudentBookEntry = Entry(self.master, width=10, font='Consolas')
         self.delStudentBookEntry.pack()
 
-        self.applyChanges = Button(master, text="Appliquer les modifications", command = self.apply_changes)
-        self.applyChanges.pack(pady=10)
+        self.applyChanges = Button(self.master, text="Appliquer les modifications", command = self.apply_changes)
+        self.applyChanges.pack()
 
     def apply_changes(self):
 
         if len(self.changeStudentGradeInput.get()) != 0:
-                self.classroom.classe(self.curseselection, self.changeStudentGradeInput.get())
-        if self.addStudentBookEntry.get() is not None:
-            self.classroom.ajoute_emprunt(self.curseselection, self.addStudentBookEntry.get())
+                if self.classroom.classe(self.curseselection, self.changeStudentGradeInput.get()):
+                    self.close_window()
+                    return (tkinter.messagebox.showinfo('Confirmation', 'Modification(s) enregistrée(s) avec succès !'))
+                else:
+                    self.master.attributes('-topmost', False)
+                    return (tkinter.messagebox.showerror('Erreur', 'Le classe indiquée n\'est pas attribuable.')), self.master.attributes('-topmost', True)
+        if len(self.addStudentBookEntry.get()) != 0:
+            if self.classroom.ajoute_emprunt(self.curseselection, self.addStudentBookEntry.get()):
+                self.close_window()
+                return (tkinter.messagebox.showinfo('Confirmation', 'Modification(s) enregistrée(s) avec succès !'))
 
-        if self.delStudentBookEntry.get() is not None:
-            print(self.classroom.dico[self.curseselection])
-            if self.classroom.del_book_borrowed(self.curseselection, str(self.delStudentBookEntry.get())):
-                return True
+        if len(self.delStudentBookEntry.get()) != 0:
+            if self.classroom.del_book_borrowed(self.curseselection, self.delStudentBookEntry.get()):
+                self.close_window()
+                return (tkinter.messagebox.showinfo('Confirmation', 'Modification(s) enregistrée(s) avec succès !'))
             else:
-                return (tkinter.messagebox.showerror('Erreur', 'Le livre indiqué n\'est pas actuellement emprunté par l\'élève !'))
+                self.master.attributes('-topmost', False)
+                return (tkinter.messagebox.showerror('Erreur', 'Le classe indiquée n\'est pas attribuable.')), self.master.attributes('-topmost', True)
 
-            # réussir à retourner l'erreur 
-        
-
-
-
-
-
-
-
-
+    def close_window(self):
+        self.master.destroy()
 
 
 
 def main():
-    root = tk.Tk()
+    root = Tk()
+    root.grid_rowconfigure(0, weight=1)
+    root.grid_columnconfigure(0, weight=1)
     app = MainApplication(root)
+
     root.mainloop()
 
 if __name__ == '__main__':
