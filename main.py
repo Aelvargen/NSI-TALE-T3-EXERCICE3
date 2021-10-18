@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 
+'''
+Auteur : SARRA Alexis
+Classe : Terminale A Groupe NSI 1
+Établissement : Ennsemble Scolaire Jean XXIII Montigny-Les-Metz
+'''
 
 from tkinter import *
 from tkinter.ttk import *
@@ -18,6 +23,7 @@ class MainApplication:
         self.students_Box = LabelFrame(self.master,text='Liste des identifiants élèves',relief=GROOVE, labelanchor='n', width=850, height=180)
         self.students_Box.grid_propagate(0)
 
+
         self.students_Box.pack(pady=15)
 
         self.scrollbar = Scrollbar(self.students_Box)
@@ -27,35 +33,40 @@ class MainApplication:
         self.listbox = Listbox(self.students_Box, width=90, bg='azure', font=('Consolas', 10, ''))  # 'TkDefaultFont 11')
         self.listbox.pack(padx=5, pady=10)
 
+        # On rajoute les identifiants élèves dans la listbox
         for key in self.classroom.dico.keys():
             self.listbox.insert(END,'%s' % ((key)))
         
         self.listbox.configure(yscrollcommand=self.scrollbar.set)
         self.scrollbar.configure(command=self.listbox.yview)
 
-        self.my_button = Button(master, text="Ajouter un élève",  command=self.add_new_student)
-        self.my_button.place(x=25, y=250)
+        self.add_new_student_button = Button(master, text="Ajouter un élève",  command=self.add_new_student)
+        self.add_new_student_button.place(x=25, y=250)
 
-        self.my_button2 = Button(master, text="Voir les infos de l'élève", command=self.show_student_info)
-        self.my_button2.place(x=150, y=250)
+        self.show_student_info_button = Button(master, text="Voir les infos de l'élève", command=self.show_student_info)
+        self.show_student_info_button.place(x=150, y=250)
 
-        self.my_button3 = Button(master, text="Rafraichir la liste", command = lambda : self.refresh())
-        self.my_button3.place(x=550, y=250)
-        self.master = master
+        self.refresh_button = Button(master, text="Rafraichir la liste", command = lambda : self.refresh()) # Essentiel pour actualiser la listbox avec les nouveaux élèves créés
+        self.refresh_button.place(x=550, y=250)
+
+
         self.frame = Frame(self.master, relief=RAISED, borderwidth=1)
 
-        self.agedOrOlderThan18StudentsButton = Button(master, text="Liste des élèves majeurs", command=self.show_aged_or_older_than_18_students)
-        self.agedOrOlderThan18StudentsButton.place(x=400, y=250)
+        self.show_aged_or_older_than_18_students_button = Button(master, text="Liste des élèves majeurs", command=self.show_aged_or_older_than_18_students)
+        self.show_aged_or_older_than_18_students_button.place(x=400, y=250)
 
-        # TOUS LES LOGOS UTILISÉS PROVIENNENT DU SITE: https://www.flaticon.com/
-        self.refresh()
+        self.note = Label(self.master, text="Note : Il est nécéssaire de rafraîchir la liste après chaque ajoute d'élève.", foreground='black', background='#FFF')
+        self.note.place(x=25, y=300)
+
+
+
         self.frame.pack()
         self.createMenuBar(master)
         self.main_application_geometry = self.window_geometry(master, 700, 500)
         self.init_Window(master)
 
-    
-    def refresh(self):
+    # On rajoute chaque nouvel identifiant élève dans la listbox
+    def refresh(self): 
         for key in self.classroom.dico.keys():
             if key not in self.listbox.get(0, 'end'):
                 self.listbox.insert(END, '%s' % ((key)))
@@ -80,7 +91,7 @@ class MainApplication:
 
 
     def init_Window(self, master): 
-        self.title = master.title('Liste des élèves')
+        self.title = master.title('Gestion d\'élève')
         master.configure(bg='#FFF')
 
         
@@ -150,11 +161,12 @@ class MainApplication:
 class addNewStudentWindow:
     def __init__(self, master, window_geometry, classroom):
         self.classroom = classroom
-        self.test = window_geometry(master, 600, 375)
+        self.window_geometry = window_geometry(master, 600, 375)
         self.master = master
         self.frame = Frame(self.master)
         master.configure(bg='#FFF')
         master.attributes('-topmost', True)
+
 
         self.students_Box = LabelFrame(self.master,text='Nouvel Élève', relief=GROOVE, labelanchor='n', width=850, height=180)
         self.students_Box.grid_propagate(0)
@@ -208,7 +220,7 @@ class addNewStudentWindow:
 
         else:
             self.close_window()
-            return (tkinter.messagebox.showinfo('Confirmation', "Enregistrement fait !"))
+            return (tkinter.messagebox.showinfo('Confirmation', "Enregistrement effectué avec succès !"))
 
     def close_window(self):
         self.master.destroy()
@@ -218,7 +230,7 @@ class showStudentInfos():
     def __init__(self, master, window_geometry, classroom, curseselection):
         self.curseselection = curseselection
         self.classroom = classroom
-        self.test = window_geometry(master, 600, 500)
+        self.window_geometry = window_geometry(master, 600, 500)
         self.master = master
         self.frame = Frame(self.master)
         master.configure(bg='#FFF')
@@ -230,8 +242,6 @@ class showStudentInfos():
 
         self.studentNameTitle = Label(self.students_Box, text="Prénom", foreground='#151414', font=('Consolas', 11, 'normal', 'underline'))
         self.studentNameTitle.grid(row=0, sticky=E)
-        self.studentNameTitle.grid_rowconfigure(1, weight=1)
-        self.studentNameTitle.grid_columnconfigure(1, weight=1)
 
         self.studentName = Label(self.students_Box, text=' ' + classroom.dico[curseselection]['prenom'], foreground='#151414', font='Consolas')
         self.studentName.grid(row=0, column=1, sticky=W)
@@ -277,32 +287,34 @@ class showStudentInfos():
     def apply_changes(self):
 
         if len(self.changeStudentGradeInput.get()) != 0:
-                if self.classroom.classe(self.curseselection, self.changeStudentGradeInput.get()):
-                    self.close_window()
-                    return (tkinter.messagebox.showinfo('Confirmation', 'Modification(s) enregistrée(s) avec succès !'))
-                else:
-                    self.master.attributes('-topmost', False)
-                    return (tkinter.messagebox.showerror('Erreur', 'Le classe indiquée n\'est pas attribuable.')), self.master.attributes('-topmost', True)
-        if len(self.addStudentBookEntry.get()) != 0:
-            if self.classroom.ajoute_emprunt(self.curseselection, self.addStudentBookEntry.get()):
-                self.close_window()
-                return (tkinter.messagebox.showinfo('Confirmation', 'Modification(s) enregistrée(s) avec succès !'))
-
-        if len(self.delStudentBookEntry.get()) != 0:
-            if self.classroom.del_book_borrowed(self.curseselection, self.delStudentBookEntry.get()):
-                self.close_window()
-                return (tkinter.messagebox.showinfo('Confirmation', 'Modification(s) enregistrée(s) avec succès !'))
-            else:
+            try:
+                self.classroom.classe(self.curseselection, self.changeStudentGradeInput.get())
+                
+            except:
                 self.master.attributes('-topmost', False)
                 return (tkinter.messagebox.showerror('Erreur', 'Le classe indiquée n\'est pas attribuable.')), self.master.attributes('-topmost', True)
+
+        if len(self.addStudentBookEntry.get()) != 0:
+                self.classroom.ajoute_emprunt(self.curseselection, self.addStudentBookEntry.get())
+
+        if len(self.delStudentBookEntry.get()) != 0:
+            try:
+                self.classroom.del_book_borrowed(self.curseselection, self.delStudentBookEntry.get())
+
+            except ValueError:
+                self.master.attributes('-topmost', False)
+                return (tkinter.messagebox.showerror('Erreur', 'Le livre renseigné n\'est pas emprunté par l\'élève.')), self.master.attributes('-topmost', True)
+        self.close_window()
+        return tkinter.messagebox.showinfo('Modifications enregistrées', 'Les modifications apportées ont été appliquées !')
 
     def close_window(self):
         self.master.destroy()
 
+# On se sert de la méthode de la classe EnsEleve qui nous renvoit la liste des élèves majeurs
 class showAgedOrOlderThan18Students():
     def __init__(self, master, window_geometry, classroom):
         self.classroom = classroom
-        self.test = window_geometry(master, 600, 200)
+        self.window_geometry = window_geometry(master, 600, 200)
         self.master = master
         self.frame = Frame(self.master)
         master.configure(bg='#FFF')
@@ -325,7 +337,6 @@ class showAgedOrOlderThan18Students():
         self.scrollbar.configure(command=self.listbox.yview)
 
         
-
 
 def main():
     root = Tk()

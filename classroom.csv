@@ -1,4 +1,6 @@
 id,nom,prenom,date_de_naissance,classe,emprunts
 elv1,Mebeaucoup,Sarah,01/01/2003,classe1,"['emprunt_1', 'emprunt_2', 'emprunt_3']"
 elv2,Camion,Bo,18/03/1954,classe2,['emprunt_4']
-elv3,Versaire,Annie,19/09/1970,Schmurtze classe,['emprunt_5']
+elv3,Versaire,Annie,19/09/1970,Premiere B,elv3
+elv4,Alexis,Sarra,07/12/2004,Terminale STL,"['Les Garous', 'Le secret agent']"
+elv5,Tristan,Kolt,01/08/2000,Terminale A,['Les Fables DLF']
